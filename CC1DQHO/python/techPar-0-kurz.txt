@@ -1,0 +1,1 @@
+#mass 1.0, fConst 1.0, rSep 2.0, xDist 0.0, zDist 0.0, nbFcts 50.0, nbGHpoints 100.0, nbEigval 3.0, mxPTord 50.0, eigenvalues 1.751499, 
