@@ -4,7 +4,7 @@ from Formeln import *
 
 typ = ""
 try:
-    dateiname = Dateiname(b = "")
+    dateiname = Dateiname(b="xyz")
     alles=Einlesen(dateiname)
     typ = "xyz"
     alles = alles[2:]
@@ -15,43 +15,87 @@ except:
     typ = "alles"
 
 
-if "kurz" in dateiname:  # = Tabelle, aus der die Spalten gleicher Werte gekürzt wurden -> Extrazeilen oben für Angabe dieser gl. Werte 
-    titel = alles[0][1:-1] # titel: "#" vor mass muss entfernt werden, \n am Ende abgeschnitten
-    alles = zeilenaufteilen(alles)
-    a = alles[2] # Tabellenkopf 
-    daten = Durchgehen(alles[3:] ) 
-else:
-    titel = dateiname
-    alles = zeilenaufteilen(alles)
-    a = alles[0]
-    a[0] = a[0][1:] # Entfernen #   
-    daten = Durchgehen(alles[1:] ) 
+daten = zeilenaufteilen(alles)
+daten = Durchgehen(daten)
+
+
 
 
 
 # Formelzeichen, Schreibweise:
 nachkomma = 3 #4 führende Stellen
-e = "aus" #Ein-/Ausschalten der 10er-Schreibweise
 nuller = "aus" #verändern (!= "aus"), wenn keine 10^{+00} geschreiben werden sollen
 art ="e" #f für runden auf (nachkomma) Stellen, e für Exp.formatanzeige mit (nachkomma) Kommastellen
-for i in range(len(daten)): # schon vorher ins passende Zahlenformat gebracht (gerundet etc.) 
+for i in range(len(daten)):
     for j in range(len(daten[i])):
-        daten[i][j] = "$" + str(( daten[i][j])) + "$" #Formel für Zahlen
+            try:
+                x = "{:."+str(nachkomma)+art+"}"
+                daten[i][j] = "$" + str( x.format( float( daten[i][j]))) + "$" #Formel für Zahlen
+                if "e" in daten[i][j]: # Exponenten / 10^...
+                    if nuller =="aus" and daten[i][j][-3:-1] == "00":
+                        daten[i][j] = daten[i][j][:-5]
+                    #print(daten[i][j][-3:-1])
+                    else: 
+                        index = daten[i][j].find("e")
+                        daten[i][j] = daten[i][j][:index] + " \cdot 10^{" + daten[i][j][index+1:-1] + "} $"
+            except:
+                #Kontrolle auf []-Symbole: 
+                k = 0
+                while k < len(daten[i][j]):
+                    if daten[i][j][k] == "[":
+                        print("wer",daten[i][j][:k] )
+                        daten[i][j] = daten[i][j][:k] + "{" + daten[i][j][k:]
+                        print(daten[i][j])
+                        k += 1
+                    if daten[i][j][k] == "]":
+                        daten[i][j] = daten[i][j][:k+1] + "}" + daten[i][j][k+1:]
+                    k+=1
+                
+                pass
+
+
 
 
        
+#Anzahl a der Spalten:
+def an(z):
+	a = []
+	for i in range( z ):
+		a += [""] 
+	return a
+
+
+
+#Leere Arrays mit Länge der Tabellenspaltenanzahl: 
+try: 
+	a = an( int(sys.argv[2])  ) # für individuelle (Extra-)Angabe
+except: 
+	m = 0
+	for i in daten:
+		if len(i) > m:
+			m = len(i)  
+	a = an(m) # oder Wert aus der Mitte mit: len( daten[len(daten)//2] ) )
+einheiten = a 
+
+
+#bzw. Arrays mit der Tabellenkopfzeile für Koordinatenfiles: 
+if "xyz" in dateiname: 
+    einheit = "[\si{\\angstrom}]"
+    a = ["Atom", "$x$", "$y$", "$z$"]
+    einheiten = ["", einheit, einheit, einheit]
+
 
 #für Tabellenfangang: 
 zeile1 = "\hline\n"
 for i in range(len(a)):
-        zeile1 += a[i] + " " 
-        if i < len(daten[-1])-1:
+        zeile1 += a[i] + " " + einheiten[i]
+        if i < len(a)-1:
             zeile1 += "\t &"
 zeile1 += "\\\ \hline \n"
 
 
 #Spaltenbreite: 
-breite = (21-6) / len(daten[-1] )  
+breite = (21-6) / len(a) 
 breite = str(breite) + "cm"
 
 
@@ -64,10 +108,11 @@ else:
 
 
 
+
 f = open( dateiname, "w")
 #Tabellenkopf: 
-f.write( "\\begin{table}[H] \n \caption{" + titel + "} \n \label{} \n \\begin{tabular}{") 
-for i in range(len(daten[-1])):
+f.write( "\\begin{table}[h] \n \caption{} \n \label{} \n \\begin{tabular}{")
+for i in range(len(a)):
     f.write( "p{" + breite + "}" )
 f.write( "}\n" ) 
 #Kopfzeile der Tabelle: Erläuterungen der Werte: 
@@ -78,7 +123,7 @@ for i in daten:
             for j in range(0,len(i) -1):
                 f.write( str( i[j] ) + "\t & ")
             f.write( str(i[-1])+ " " )
-            l = len(daten[-1])  - len(i)
+            l = m - len(i)
             #print(i,j, l)
             f.write("\t &"*l)  # Ergänzen leerer Spalten bis zur max. Spaltenanzahl (ggf. 0-mal, wenn bereits vollständig)
             f.write("  \\\ \n")
