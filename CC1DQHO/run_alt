@@ -1,0 +1,30 @@
+
+
+
+declare -a t=() 
+t+=(techVar)
+
+declare -a s=()
+s+=(sysVar) # sysVar_k0.01 sysVar_k0.1 sysVar_k3 sysVar_k10 sysVar_k20)
+
+
+
+for F in "${t[@]}"
+do
+cp ./$F/*inp .
+julia main.jl
+mv *tab $F
+rm *inp
+done
+
+for F in "${s[@]}"
+do
+cp ./$F/*inp .
+julia main.jl
+mv *tab $F
+rm *inp
+done
+
+
+
+rm nohup.out

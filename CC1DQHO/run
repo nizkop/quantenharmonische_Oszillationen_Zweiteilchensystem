@@ -1,13 +1,15 @@
-cp ./techVar/* .
+
+cp ./techVar/*inp .
 julia main.jl
 mv *tab techVar
 rm *inp
-rm *tab
 
-cp ./sysVar/* .
+
+
+cp ./sysVar/*inp .
 julia main.jl
 mv *tab sysVar
 rm *inp
-rm *tab 
 
-rm nohup.out 
+
+rm nohup.out

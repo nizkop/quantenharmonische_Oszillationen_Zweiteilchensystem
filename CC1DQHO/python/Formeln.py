@@ -1,6 +1,6 @@
 import sys
 import matplotlib.pyplot as plt
-
+from math import * 
 
 def Diagramm(x,y,xAchse="x-Achse", yAchse="y-Achse",
 		Titel="Titel", Label="label", style="-"):
@@ -116,9 +116,9 @@ def z(l):  # Suchen der Indizes der veränderten Werte in Array mit Unterarrays
 
 
 def bez(a):
-	if a == 0:	return "z = 0" #"entlang x"
-	if a == 1:	return "x = 0" # "entlang z"
-	if a == 2:	return "x = z" #"diagonal"
+	if a == 1:	return "Z = 0" #"entlang x"
+	if a == 0:	return "X = 0" #"entlang z"
+	if a == 2:	return "X = Z" #"diagonal"
 	else:		return "Rest" 
 
 def Max_index(l):

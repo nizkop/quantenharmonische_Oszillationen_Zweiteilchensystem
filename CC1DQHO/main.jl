@@ -78,7 +78,13 @@ for itec = 1:nbtec
                 integrand = zeros(details[itec].nbGHpoints)
                 for k = 1:details[itec].nbGHpoints
                     integrand[k] = hvalues[k][i] * hvalues[k][j] * potval[k]
-                end
+		    if integrand[k] == Inf || integrand[k] == NaN
+			println( "integrand[k]", integrand[k], " hvalues[k]", hvalues[k][i], " und " , hvalues[k][j], " potval[k] " , potval[k] , " k " , k , " i ", i, " j " , j)
+                    end
+		end
+		if NaN in integrand || Inf in integrand
+			println("NaN or Inf in integrand")
+		end
                 perpotmat[ij] = dot(weights,integrand)
             end
         end

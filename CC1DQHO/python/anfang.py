@@ -48,12 +48,15 @@ from Formeln import *
 
 genauigkeit = 6
 try:
-    tech = sys.argv[1] 
+    tech = sys.argv[1]
 except:
     tech =  "nein" #Auswertung der tech. Variation
 
+try:
+    r = sys.argv[2] 
+except:
+    r = "ges" # Auswahl für Diagrammbereich bei Systemvariation: "nah", "mitte", "fern"
 
-r = "ges" # Auswahl für Diagrammbereich bei Systemvariation: "nah", "mitte", "fern"
 
 
 #################################################################################
@@ -172,9 +175,9 @@ if tech == "ja":
 
 
 #Diagramm für Systemvariation:
-U =  [ [], [], [] , [] ]  #für Herausschreiben der Abstände (Index 0) & Energien (Index 1) 
 
 if tech != "ja":
+        U =  [ [], [], [] , [] ]  #für Herausschreiben der Abstände (Index 0) & Energien (Index 1) 
         for a in range(len(L)):
                 if len(L[a]) <= 2:      break
                 if a == 0:
@@ -194,7 +197,7 @@ if tech != "ja":
                 y = []
                 for b in range(len(L[a])) :
                     x += [ float( L[a][b][ix] )]
-                    y += [float(L[a][b][iy])]
+                    y += [ float(L[a][b][iy]) ] 
                 Diagramm(x = x , y = y, Label= label, style = "x" ,
                          xAchse = "Abstand R [a.u.]", yAchse= "Grundzustandsenergie [Eh]"
                          #, Titel = "sysPar: Übersicht Energieverhalten mit Abstandsvariation"
@@ -202,57 +205,58 @@ if tech != "ja":
                 U[a] = [ x , y ]
         plt.legend() 
         if r == "nah":
-                plt.xlim(0,1)
-                plt.ylim(1.2, 1.8) 
+                plt.xlim(0,2)
+                plt.ylim(0.8, 1.8) 
         elif r == "mitte":
-                plt.xlim(1,5)
-                plt.ylim(0.6, 1.5)
+                plt.xlim(5,10)
+                plt.ylim(0.59, 0.72)
         elif r == "fern": 
-                plt.xlim(5, 10)
-                plt.ylim(0.58, 0.73)
+                plt.xlim(10,60)
+                plt.ylim(0.49, 0.62)
         else:
-            plt.xlim(0, 10)
+            plt.xlim(0, 60)
         plt.savefig( "abstaende-" + r + ".pdf")
         plt.close()
 
-	
-#print([U]) 
-#print(len(U[0]))
-#print(len(U[0][0]))
+                
+        #print([U]) 
+        #print(len(U[0]))
+        #print(len(U[0][0]))
 
 
 
-D = [] 
-for a in range(len(U)):
-	if len(U[a]) == 0:	break
-	#d = []
-	for b in range(a+1, len(U)): #Vgl. Rechnungen a & b 
-		if len(U[b]) != len(U[a]): 	break #falls Unterarray leer (z.B. durch keine "Rest" Abstände)
-		#print("Kombination: ", a,b) 
-		d = []
-		for c in range(len(U[a][0])): 
-			if round(U[a][0][c],1) != round(U[b][0][c],1): #Index 0 = Abstände
-				print("! ungleicher Abstand: ", U[a][0][c] , " und ", U[b][0][c])
-			else: # Index 1 = Energien (Grundzustand) 
-				d += [ abs( U[b][1][c] - U[a][1][c] ) ]
-	
-		D += [[  bez(a)+" zu "+bez(b) , U[a][0] , d ]] #Index 2 -> Energiedifferenzen 
+        D = [] 
+        for a in range(len(U)):
+                if len(U[a]) == 0:	break
+                #d = []
+                for b in range(a+1, len(U)): #Vgl. Rechnungen a & b 
+                        if len(U[b]) != len(U[a]): 	break #falls Unterarray leer (z.B. durch keine "Rest" Abstände)
+                        #print("Kombination: ", a,b) 
+                        d = []
+                        for c in range(len(U[a][0])): 
+                                if round(U[a][0][c],1) != round(U[b][0][c],1): #Index 0 = Abstände
+                                        print("! ungleicher Abstand: ", U[a][0][c] , " und ", U[b][0][c])
+                                else: # Index 1 = Energien (Grundzustand) 
+                                        d += [ abs( U[b][1][c] - U[a][1][c] ) ]
+                
+                        D += [[  bez(a)+" zu "+bez(b) , U[a][0] , d ]] #Index 2 -> Energiedifferenzen 
 
-#print(D)
-#print(len(D[0]), "soll = 3")
-#print(len(D[0][2]), "soll = ", len(U[0][0]) )
-
-
+        #print(D)
+        #print(len(D[0]), "soll = 3")
+        #print(len(D[0][2]), "soll = ", len(U[0][0]) )
 
 
-for a in range(len(D)):
-	print("maximaler Unterschied der Energien bei ", D[a][1][Max_index(D[a][2])] ,"a.u. von" , max( D[a][2] ) , "Eh für ", D[a][0]  )
-	Diagramm( D[a][1], D[a][2], Label= D[a][0] , xAchse = "Abstand R [a.u.]", yAchse = "Energiedifferenzbeträge [Eh]" )
-plt.legend() 
-plt.savefig("Energiedifferenzen.pdf")
 
 
-#!? maximalen Unterschied ausgeben; genauere Daten um R = 2 
+        for a in range(len(D)):
+                print("maximaler Unterschied der Energien bei ", D[a][1][Max_index(D[a][2])] ,"a.u. von" , max( D[a][2] ) , "Eh für ", D[a][0]  )
+                Diagramm( D[a][1], D[a][2], Label= D[a][0] , xAchse = "Abstand R [a.u.]", yAchse = "Energiedifferenzbeträge [Eh]" )
+        plt.legend() 
+        plt.xlim(0,10)
+        plt.savefig("Energiedifferenzen.pdf")
+
+
+
 
 
 

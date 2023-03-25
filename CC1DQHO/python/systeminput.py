@@ -9,28 +9,29 @@ def ar(a, e, s):
 	return 
 
 f = open("systems.inp", "w")
-f.write("mass\tfConst\trSep\txDist\tzDist\n")
+f.write("mass\tfConst\trSep\txDist\t\t\tzDist\n")
 
 mass = 1.0
-fConst = 1.0
+fConst = 0.1
 rSep = 2.0
 
 xDist = []
 zDist = []
-ar(0, 1, 0.1)
-ar(1, 5, 0.5)
-ar(5, 10, 1) 
+ar(0, 2, 0.1)
+ar(2, 10, 0.5)
+ar(10, 60, 1) 
 
 for x in xDist:
 	for z in zDist:
             if x == 0 or z == 0:# or x == z: 
                 f.write( str(mass) + "\t" +str( fConst) + "\t" + 
 			str(rSep) + "\t" + 
-			str(x) + "\t" + str(z) + "\n" )
+			str(x) + "\t\t\t" + str(z) + "\n" )
             elif x == z:
                 f.write( str(mass) + "\t" +str( fConst) + "\t" +
                         str(rSep) + "\t" +
-                        str(  x / sqrt(2) )   + "\t" + str( z / sqrt(2) ) + "\n" )
+                        str(  x / sqrt(2) )   + "\t" 
+                         + str( z / sqrt(2) ) + "\n" )
 
 
 f.close()

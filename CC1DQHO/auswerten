@@ -1,14 +1,38 @@
-cp python/* techVar
-cd techVar
+declare -a t=()
+t+=(techVar)
+
+declare -a s=()
+s+=(sysVar) # sysVar_k0.01 sysVar_k0.1 sysVar_k3 sysVar_k10 sysVar_k20)
+
+
+
+for F in "${t[@]}"
+do
+cp python/*py $F
+cd $F
 python3 anfang.py ja
-#python3 ... .py contributions.tab 
 python3 Latex.py *txt   #uebersicht-kurz.txt
 rm *py
+rm -r __pycache__
 cd ..
+done
 
-cp python/* sysVar
-cd sysVar
+
+for F in "${s[@]}"
+do
+cp python/*py $F
+cd $F
+python3 anfang.py nein nah
+python3 anfang.py nein mitte
+python3 anfang.py nein fern
 python3 anfang.py nein
 python3 Latex.py *txt
+python3 Latex.py sysPar-0-kurz.txt
+python3 Latex.py sysPar-1-kurz.txt
+python3 Latex.py sysPar-2-kurz.txt
+rm -r __pycache__
 rm *py 
 cd ..
+done
+
+
