@@ -1,0 +1,18 @@
+anzahl = parse(Int64, ARGS[1])
+array = []
+#print(anzahl)
+
+
+for i in 1:anzahl
+    append!(array, [string(readline())])
+    #! eckige Klammern, da ansonsten jeder Buchstabe einzeln als Arraywert gespeichert wird
+end
+
+print(array)
+
+open("sortiert.txt", "w") do io
+    for i in sort(array)
+	zeile = string(i) * "\n"
+        write(io, zeile);
+    end
+end

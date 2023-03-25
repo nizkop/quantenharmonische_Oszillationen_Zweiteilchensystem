@@ -1,0 +1,6 @@
+open(PROGRAM_FILE, "r") do io
+    a = readlines(io)
+    for i in a
+        print(i, "\n")
+    end
+end
