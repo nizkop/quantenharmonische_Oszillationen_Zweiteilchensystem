@@ -2,8 +2,8 @@ using LinearAlgebra
 using FastGaussQuadrature
 
 # physical parameters:
-pdist = 0.0    # parallel distance between the oscillators (in a.u.)
-odist = 20.0    # orthogonal distance between the oscillators (in a.u.)
+pdist = 0.5    # parallel distance between the oscillators (in a.u.)
+#odist = 0.0    # orthogonal distance between the oscillators (in a.u.)
 mass = 1.0     # mass of oscillating particle (in a.u.)
 force =1.0    # force constant (in a.u.)
 
@@ -49,7 +49,8 @@ end
 
 # determine eigenvalues of Hamilton matrix:
 energies = eigvals(hamiltonmat)
-file_en=open("energies.dat", "w")
+name = "energies_pdist" * string(pdist)*"_odist"* string(odist)*".dat"
+file_en=open(name, "w")
 for i = 1:nbfcts
    println(file_en, i, "  ", energies[i])
 end
