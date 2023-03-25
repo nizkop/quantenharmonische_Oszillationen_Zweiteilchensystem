@@ -40,11 +40,21 @@ def Dateiname(a = "", b = "out"): # Anhang " z" an Variable a für zurückübers
 	dateiname += a + "."+b
 	return dateiname
 
-#a = "", "start", "optimiert" , "FREQ" 
-#b = "out", "xyz", "txt" , "inp" 
-
-
-#print( Dateiname() ) 
+#allgemeines Aufteilen der Zeilen nach Leerzeichen etc.:
+def zeilenaufteilen(b): # b = Array mit Strings von Zeilen 
+    c = []
+    for i in b:
+            e = "" #Var. für einzelne Werte /Angaben in der Zeile
+            d = [] #Array der einzelnen Zeilen
+            for j in i:
+                    if j == " " or j == "\t" or j == "\n":
+                            if len(e) >= 1:
+                                    d += [e]
+                            e = ""
+                    else:
+                            e += j
+            c += [d]
+    return c
 
 
 def Einlesen(dateiname):
@@ -53,75 +63,6 @@ def Einlesen(dateiname):
 	f.close()
 	return alles
 
-
-
-
-
-def winkel(a,b,c):
-        import math 
-        from Koordinatenauswertung import genauigkeit
-        #a = mittleres Atom
-        vek1=[]
-        vek2=[]
-        for i in range(len(a)):
-                vek1 +=[ a[i] - b[i] ]
-                vek2 += [ a[i] - c[i] ]
-        s = prod(vek1, vek2)
-        #print("s", s)
-        l1 = laenge(vek1)
-        l2 = laenge(vek2) 
-        #print("l2", l2, 3**0.5)
-        phi = math.acos( s  / ( l1 * l2) ) # in RAD
-        return round(phi*180/math.pi, genauigkeit) 
-
-
-#Test:
-#print( winkel( [0,0,0], [1,0,0], [0,1,0] ) )
-
-def Max(l,): #Koordinatenauswertung.py
-                m = l[0][0]
-                for i in l:
-                        for j in i:
-                                if j > m:
-                                        m = j
-                return m
-
-
-def Min(l): #Koordinatenauswertung.py
-        m = l[0][0]
-        for i in l:
-                for j in i:
-                        if j < m:
-                                m = j
-        return m
-
-
-def laenge(v):
-        l = 0
-        for i in v:
-                l += i**2
-        return l**(0.5) 
-
-import math
-
-def prod(v1,v2):
-        s = 0
-        for i in range(len(v1)):
-                s += v1[i] * v2[i]
-        return s
-
-
-''' alt = nur für Latextabellenanlegen: 
-def auftrennen(string, f=""):
-    if string[0] == "\n":
-        return f+" \\\ "+string[0]
-    elif string[0] == " " or string[0] == "\t":
-        if len(f) > 0 and f[-1] != "&":
-                f += "\t &" 
-    else:
-        f += string[0]
-    return auftrennen(string[1:], f)
-'''
 def auftrennen(string, f="", aus ="Latex"):
     if len(string) == 0 or string[0] == "\n":
         if aus =="Latex":
@@ -153,164 +94,55 @@ def Durchgehen(c):
     return c
 
 
-def Genauigkeit(c): 
-    global genauigkeit
-    genauigkeit =  len(c[0][1]) -1 - c[0][1].find(".")
-    return genauigkeit
+
+
+zahlen = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-"] 
 
 
 
-def plotliste(alles): 
-        liste =[[]]
-        for i in range(0,len(alles)):
-            if alles[i] =="\n":
-                pass
-            else:
-                #print( [ alles[i]] ) 
-                a =   auftrennen(alles[i], aus ="diag")  
-                #print(a)
-                for j in range(len(a)):
-                    while j+1 > len(liste):
-                        liste += [[]] 
-                        #print(liste, len(liste)) 
-                    #print("a[j]", a[j]) 
-                    #print("liste[j]", type(liste[j]) ) 
-                    liste[j] += [ a[j] ]
-        return liste
+def z(l):  # Suchen der Indizes der veränderten Werte in Array mit Unterarrays 
+    a = len(l) 
+    if a == 0: return
+    b = len(l[0])
+    v = [] # Array für geänderte Werte
+    for k in range(b):
+        x = l[0][k]
+        for j in range(1,a):
+            if l[j][k] != x:
+                v += [k] 
+                break 
+    return v
 
 
-def mol_anzahl(liste): #liste mit den Molekülnamen 
-        grenze_BN = 0
-        grenze_BeO = 0
-        for i in range(len(liste)):
-            if grenze_BN == 0:
-                if "N" in liste[i]:
-                    pass
-                else:
-                    grenze_BN = i
-            elif grenze_BeO == 0:
-                if "Be" in liste[i]:
-                    pass
-                else:
-                    grenze_BeO = i
-            else:
-                break
-        return [grenze_BN, grenze_BeO]
 
+def bez(a):
+	if a == 0:	return "z = 0" #"entlang x"
+	if a == 1:	return "x = 0" # "entlang z"
+	if a == 2:	return "x = z" #"diagonal"
+	else:		return "Rest" 
 
-#Gesamtatomanzahlen raussuchen aus Molekülname:
-def gesamtatomanzahl(liste):
-        #sucht aus Atomnamen die Atomanzahlen heraus, addiert sie und hängt sie als Liste an das vorgegebene Array an
-        l = len(liste)
-        liste += [[]] 
-
-        for i in range(len(liste[0])):
-            nr = 0
-            j = 0
-            while j <= len(liste[0][i]):
-                try:
-                       try:# für Zahlen > 9  
-                        nr += int( liste[0][i][j:j+2] ) 
-                        j += 1
-                       except: # Zahlen < 10 bzw. Ende 
-                        nr += int( liste[0][i][j] ) 
-                except:
-                       pass
-                j += 1
-            liste[l] += [nr]
-        # ! Index l sollte Index -1 der liste entsprechen
-        return liste
-
-
-#allgemeines Aufteilen der Zeilen nach Leerzeichen etc.:
-def zeilenaufteilen(b): # b = Array mit Strings von Zeilen 
-    c = []
-    for i in b:
-            e = "" #Var. für einzelne Werte /Angaben in der Zeile
-            d = [] #Array der einzelnen Zeilen
-            for j in i:
-                    if j == " " or j == "\t" or j == "\n":
-                            if len(e) >= 1:
-                                    d += [e]
-                            e = ""
-                    else:
-                            e += j
-            c += [d]
-    return c
-
-def diagramm_t1(liste, grenze_BN, grenze_BeO): 
-        #einzeln für BN, BeO & LiF: 
-        #print( liste[0][:grenze_BN]  )
-        Diagramm(liste[-1][:grenze_BN], liste[1][:grenze_BN], Label ="BN", style = "o" ) 
-        #print( liste[0][grenze_BN:grenze_BeO]  )
-        Diagramm(liste[-1][grenze_BN:grenze_BeO], liste[1][grenze_BN:grenze_BeO] ,
-                style ="x", Label = "BeO")
-        #print( liste[0][grenze_BeO:]  )
-        Diagramm(liste[-1][grenze_BeO:], liste[1][grenze_BeO:], Label ="LiF",
-                Titel ="DLPNO-CCSD(T), T1 diagnostic", xAchse = "Atomanzahl n",
-                yAchse ="T1-diagnostic Wert", style = "*" )
-
-        plt.xlim()
-        plt.ylim( min( liste[1]  ) - 0.001 ,  0.021)
-        #plt.legend(shadow ="False" ) #lns, labs, loc ="right", bbox_to_anchor=(0.5, 1)      )
-        plt.legend(framealpha=1, frameon = "True")
-        
-        plt.axhline(y=0.02, color='r', linestyle='-')
-        plt.savefig("T1-diagnostic.pdf", bbox_inches="tight")
-        plt.close()
-        return
-
-
-def diagramm_en(liste, grenze_BN, grenze_BeO, art):
-    #Auswahl der Energiespalte (CC vs. RHF, Eh vs. eV)
-    if art =="CC,Eh":
-        a = 1
-    elif art =="CC,eV":
-        a = 2
-    elif art=="RHF,Eh":
-        a = 3
-    elif art =="RHF,eV":
-        a = 4
-
-    Diagramm(liste[-1][:grenze_BN], liste[a][:grenze_BN], Label ="BN", style ="o")
-    Diagramm(liste[-1][grenze_BN:grenze_BeO], liste[a][grenze_BN:grenze_BeO],
-            style ="x", Label="BeO")
-    Diagramm(liste[-1][grenze_BeO:], liste[a][grenze_BeO:], style ="*", Label ="LiF",
-            xAchse ="Gesamtatomanzahl n [-]", Titel ="Energieübersicht ("+art+")")
-    if a == 1 or a == 3:
-        y = "[Eh]"
-    elif a==2 or a == 4:
-        y ="[eV]"
-    plt.ylabel("Energie "+y)
-    plt.legend()
-    plt.savefig("Energien-"+art+".pdf", bbox_inches="tight")
-    plt.close()
-    return
-
-
-def D(t): 
-	T1 = ""
-	if len(t) < 0: return
-	#hinter der Zahl sind noch Leerzeichen -> Entfernen: 
-	i = len(t)-1 #letzter Index
-	while i>= 0 and (t[i] == " " or t[i] =="\n" or t[i] =="\t"): #! Reihenfolge der Bedingungen soherum, da sonst Indexerror
-		i -= 1
-	#print(len(t)-i) # = Anzahl Leerzeichen etc. hinten 
-	for i in range(i, -1 , -1): 
-			if t[i] in zahlen or t[i] ==".":
-				T1 = t[i] + T1 
-			else: 
-				return T1
-
-
-####################################################
+def Max_index(l):
+	b = max(l) 
+	for a in range(len(l)):
+		if l[a] == b: return a
+	return print("kein Maximalwert in der Liste") 
 
 
 
 
-atome = ["C", "B", "N" ,"Be", "O", "Li", "F"]
-zahlen = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+def aenderung(x):
+   global liste
+   global ver
+   vorwert = liste[1][x] #1. Datenzeile
+   for a in range(2, len(liste)):
+           b = liste[a][x]
+           if b != vorwert:
+               ver += [a]
+               return ""
+   return str(liste[0][x]) + b +"_" #Generiert String, der die identischen Parameter aneinanderreiht
 
 
-
+def abstand(x, z):
+        return round( ( x*x + z*z)**(1/2) , 2)   
 

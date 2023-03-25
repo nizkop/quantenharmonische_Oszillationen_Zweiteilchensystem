@@ -1,119 +1,13 @@
-def Einlesen(dateiname):
-	f = open(dateiname, "r") #,encoding='cp1252'
-	alles = f.readlines()
-	f.close()
-	return alles
 
-
-def Diagramm(x,y,xAchse="x-Achse", yAchse="y-Achse",
-		Titel="Titel", Label="label", style="-"):
-        plt.xlabel(xAchse)
-        plt.ylabel(yAchse)
-        if Titel != "Titel":
-             plt.title(Titel)
-        if Label != "label":
-            plt.plot(x,y,'''{f}'''.format(f=style),label=str(Label))
-        else:
-            plt.plot(x,y,'''{f}'''.format(f=style))
-        #plt.savefig("dfjhe.pdf")
-        return
-
-
-def auftrennen(string, f="", aus ="Latex"):
-    if len(string) == 0 or string[0] == "\n":
-        if aus =="Latex":
-            return f+" \\\ "+string[0]
-        else:
-            return [f]
-    elif string[0] == " " or string[0] == "\t":
-        if aus =="Latex" and len(f) > 0 and f[-1] != "&":
-                f += "\t &"
-        elif aus =="diag":
-            if len(f) == 0: 
-                return auftrennen(string[1:], f="", aus = aus )
-            else:
-                return [f] + auftrennen(string[1:], f="", aus = aus ) 
-    else:
-        f += string[0]
-    return auftrennen(string[1:], f, aus)
-
-
-
-def Durchgehen(c):
-    for i in range(len(c)):
-            for j in range(len(c[i])):
-                    try:
-                             c[i][j] = float(c[i][j])
-                             # !? Nachkommastellen Float anpassen!!!
-                    except:
-                            pass
-    return c
-
-
-def diagramm_t1(liste, grenze_BN, grenze_BeO): 
-        #einzeln fuer BN, BeO und LiF: 
-        #print( liste[0][:grenze_BN]  )
-        Diagramm(liste[-1][:grenze_BN], liste[1][:grenze_BN], Label ="BN", style = "o" ) 
-        #print( liste[0][grenze_BN:grenze_BeO]  )
-        Diagramm(liste[-1][grenze_BN:grenze_BeO], liste[1][grenze_BN:grenze_BeO] ,
-                style ="x", Label = "BeO")
-        #print( liste[0][grenze_BeO:]  )
-        Diagramm(liste[-1][grenze_BeO:], liste[1][grenze_BeO:], Label ="LiF",
-                Titel ="DLPNO-CCSD(T), T1 diagnostic", xAchse = "Atomanzahl n",
-                yAchse ="T1-diagnostic Wert", style = "*" )
-
-        plt.xlim()
-        plt.ylim( min( liste[1]  ) - 0.001 ,  0.021)
-        #plt.legend(shadow ="False" ) #lns, labs, loc ="right", bbox_to_anchor=(0.5, 1)      )
-        plt.legend(framealpha=1, frameon = "True")
-        
-        plt.axhline(y=0.02, color='r', linestyle='-')
-        plt.savefig("T1-diagnostic.pdf", bbox_inches="tight")
-        plt.close()
-        return
-
-
-def diagramm_en(liste, grenze_BN, grenze_BeO, art):
-    #Auswahl der Energiespalte (CC vs. RHF, Eh vs. eV)
-    if art =="CC,Eh":
-        a = 1
-    elif art =="CC,eV":
-        a = 2
-    elif art=="RHF,Eh":
-        a = 3
-    elif art =="RHF,eV":
-        a = 4
-
-    Diagramm(liste[-1][:grenze_BN], liste[a][:grenze_BN], Label ="BN", style ="o")
-    Diagramm(liste[-1][grenze_BN:grenze_BeO], liste[a][grenze_BN:grenze_BeO],
-            style ="x", Label="BeO")
-    Diagramm(liste[-1][grenze_BeO:], liste[a][grenze_BeO:], style ="*", Label ="LiF",
-            xAchse ="Gesamtatomanzahl n [-]", Titel ="Energieuebersicht ("+art+")")
-    if a == 1 or a == 3:
-        y = "[Eh]"
-    elif a==2 or a == 4:
-        y ="[eV]"
-    plt.ylabel("Energie "+y)
-    plt.legend()
-    plt.savefig("Energien-"+art+".pdf", bbox_inches="tight")
-    plt.close()
-    return
-
-
-
-
-def z(l):  # Suchen der Indizes der veränderten Werte in Array mit Unterarrays 
-    a = len(l) 
-    if a == 0: return
-    b = len(l[0])
-    v = [] # Array für geänderte Werte
-    for k in range(b):
-        x = l[0][k]
-        for j in range(1,a):
-            if l[j][k] != x:
-                v += [k] 
-                break 
-    return v
+def Abstand(a):
+        global L
+        if len(L[a]) == 0: #Verschiebungen, die nicht entlang der Achse geschehen 
+                return
+        liste[0] = liste[0][:5] + ["abstand"] + liste[0][5:] 
+        for b in range(len(L[a])):
+                x = float(L[a][b][3]) #xDist
+                z = float(L[a][b][4]) #zDist
+                L[a][b] = L[a][b][:5] + [abstand(x,z)] + L[a][b][5:]
 
 
 def raus_kurz(l,dateiname):
@@ -127,7 +21,7 @@ def raus_kurz(l,dateiname):
         if k not in ver:
             f.write( str( liste[0][k]) + " "+ str( l[0][k] ) + ", ") 
     f.write("\n\n")
-    #Tabellekopf:
+    #Tabellenkopf:
     for k in range(len(liste[0]) ) : 
         if k in ver: 
             f.write( str(liste[0][k] )+ "\t" ) 
@@ -136,57 +30,22 @@ def raus_kurz(l,dateiname):
     for k in l:
         for j in range(len(k)) :
             if j in z(l): 
-                f.write(str(k[j] ) + "\t")
+                #print( k[j] ) 
+                if j < i: 
+                    ab = round( float( k[j])  , 1 ) 
+                else: # Energiewerte
+                    ab = k[j] 
+                f.write(str( ab ) + "\t")
         f.write("\n")
     f.close()
     return
 
 
-
-
-def aenderung(x):
-   global liste
-   global ver
-   vorwert = liste[1][x] #1. Datenzeile
-   for a in range(2, len(liste)):
-           b = liste[a][x]
-           if b != vorwert:
-               ver += [a]
-               return ""
-   return str(liste[0][x]) + b +"_" #Generiert String, der die identischen Parameter aneinanderreiht
-
-
-def abstand(x, z):
-        return round( ( x*x + z*z)**(1/2) , 2)   
-
-def Abstand(a):
-        global L
-        if len(L[a]) == 0: #Verschiebungen, die nicht entlang der Achse geschehen 
-                return
-        liste[0] = liste[0][:5] + ["abstand"] + liste[0][5:] 
-        for b in range(len(L[a])):
-                x = L[a][b][3] #xDist
-                z = L[a][b][4] #zDist
-                L[a][b] = L[a][b][:5] + [abstand(x,z)] + L[a][b][5:]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #################################################################################
+#Einstellungen / Vorgaben: 
 
-import matplotlib.pyplot as plt
-import sys
+from Formeln import * 
+
 genauigkeit = 6
 try:
     tech = sys.argv[1] 
@@ -194,16 +53,11 @@ except:
     tech =  "nein" #Auswertung der tech. Variation
 
 
-try:
-    datei = sys.argv[2] 
-except:
-    datei = "eigenvalues.tab"
+r = "ges" # Auswahl für Diagrammbereich bei Systemvariation: "nah", "mitte", "fern"
 
 
-
-
-###################################
-liste = Einlesen(datei) # je Zeile ein Arrayeintrag
+#################################################################################
+liste = Einlesen("eigenvalues.tab") # je Zeile ein Arrayeintrag
 
 for a in range(len(liste)):
     liste[a] =auftrennen(liste[a] , aus ="diag") 
@@ -218,18 +72,6 @@ for i in range(len(liste[0])):
 
 
 #testen auf nicht veraenderte Werte:
-'''
-ver = [] # Array der Indizes der veraenderten Spaltenwerte (ausser der Energien)
-gleich = aenderung(0) 
-for a in range(1,i):
-    ver += aenderung(a)
-if len(gleich) > 0: 
-    gleich=gleich[:-1] #Entfernen "_" am Ende  
-
-print("gleich:", gleich, "Indizes der gleichen Werte", ver) 
-'''
-
-
 ver = z(liste[1:])
 print("Indizes der veränderten Werte:")
 for a in ver:
@@ -270,8 +112,11 @@ for a in range(len(l)):
     for b in range(len(l[a])):
         if len(str(l[a][b])) > 6:
             try:
-                c = "%0."+str(genauigkeit)+ "f" # muss zweizeilig aufgeteilt sein
-                l[a][b] = c % round(l[a][b], genauigkeit) 
+                if b >= i: 
+                    c = "%0."+str(genauigkeit)+ "f" # Energienrunden
+                else:
+                    c = "%0."+str(2)+ "f" # für x & z (Diagonalwerte)
+                l[a][b] = c % round(l[a][b], genauigkeit) # muss zweizeilig aufgeteilt sein
             except: 
                 pass
         f.write(str(l[a][b])  + "\t")
@@ -305,41 +150,6 @@ if tech != "ja":
 raus_kurz(l, dateiname = "uebersicht")
 
 
-#Diagramm für Systemvariation:
-if tech != "ja":
-        for a in range(len(L)):
-                if len(L[a]) <= 2:      break
-                if a == 0:
-                        label = "entlang x"
-                        ix = 4 #Index für zDist, da z variiert
-                        iy = i
-                elif a == 1:
-                        label = "entlang z"
-                        ix = 3 # x variiert 
-                        iy = i
-                elif a == 2:
-                        label = "diagonal"
-                        ix = 5 #eingeschobene Abstände
-                        iy = i+1
-                else:
-                        label = "Rest" 
-                        ix = 5 
-                        iy = i+1
-                #print( "L[a]", L[a] )
-                #print("ix", ix, " iy",iy, " i", i) 
-                x = []
-                y = []
-                for b in range(len(L[a])) :
-                    x += [ float( L[a][b][ix] )]
-                    y += [float(L[a][b][iy])]
-                #print( "x", x, "\n", "y", y ) 
-                Diagramm(x = x , y = y, Label= label, style = "x" ,
-                         xAchse = "Abstand", yAchse= "Energie [Eh]" , 
-                         Titel = "sysPar: Übersicht Energiverhalten mit Abstandsvariation") 
-        plt.legend()
-        plt.savefig("abstaende.pdf") 
-        plt.close()
-        
 
 
 
@@ -350,7 +160,7 @@ if tech == "ja":
         M = l[0][:5]   #Array-Variable fuers Merken der aktuellen Systemparameter 
 
         for a in range(1,len(l)):
-            if l[a][:5] == M:#inkl. Spalte 5 (= Index 4)
+            if l[a][:5] == M: #inkl. Spalte 5 (= Index 4)
                 L[-1] += [ l[a] ] 
             else:
                 L += [[ l[a] ]] 
@@ -359,6 +169,94 @@ if tech == "ja":
 
         for a in range(len(L)) : #ueber Anzahl variierter techn.Parameter-Saetze 
             raus_kurz(L[a], "techPar-"+str(a) ) 
+
+
+#Diagramm für Systemvariation:
+U =  [ [], [], [] , [] ]  #für Herausschreiben der Abstände (Index 0) & Energien (Index 1) 
+
+if tech != "ja":
+        for a in range(len(L)):
+                if len(L[a]) <= 2:      break
+                if a == 0:
+                        ix = 4 #Index für zDist, da z variiert
+                        iy = i
+                elif a == 1:
+                        ix = 3 # x variiert 
+                        iy = i
+                elif a == 2:
+                        ix = 5 #eingeschobene Abstände
+                        iy = i+1
+                else: 
+                        ix = 5 
+                        iy = i+1
+                label = bez(a) 
+                x = []
+                y = []
+                for b in range(len(L[a])) :
+                    x += [ float( L[a][b][ix] )]
+                    y += [float(L[a][b][iy])]
+                Diagramm(x = x , y = y, Label= label, style = "x" ,
+                         xAchse = "Abstand R [a.u.]", yAchse= "Grundzustandsenergie [Eh]"
+                         #, Titel = "sysPar: Übersicht Energieverhalten mit Abstandsvariation"
+                         )
+                U[a] = [ x , y ]
+        plt.legend() 
+        if r == "nah":
+                plt.xlim(0,1)
+                plt.ylim(1.2, 1.8) 
+        elif r == "mitte":
+                plt.xlim(1,5)
+                plt.ylim(0.6, 1.5)
+        elif r == "fern": 
+                plt.xlim(5, 10)
+                plt.ylim(0.58, 0.73)
+        else:
+            plt.xlim(0, 10)
+        plt.savefig( "abstaende-" + r + ".pdf")
+        plt.close()
+
+	
+#print([U]) 
+#print(len(U[0]))
+#print(len(U[0][0]))
+
+
+
+D = [] 
+for a in range(len(U)):
+	if len(U[a]) == 0:	break
+	#d = []
+	for b in range(a+1, len(U)): #Vgl. Rechnungen a & b 
+		if len(U[b]) != len(U[a]): 	break #falls Unterarray leer (z.B. durch keine "Rest" Abstände)
+		#print("Kombination: ", a,b) 
+		d = []
+		for c in range(len(U[a][0])): 
+			if round(U[a][0][c],1) != round(U[b][0][c],1): #Index 0 = Abstände
+				print("! ungleicher Abstand: ", U[a][0][c] , " und ", U[b][0][c])
+			else: # Index 1 = Energien (Grundzustand) 
+				d += [ abs( U[b][1][c] - U[a][1][c] ) ]
+	
+		D += [[  bez(a)+" zu "+bez(b) , U[a][0] , d ]] #Index 2 -> Energiedifferenzen 
+
+#print(D)
+#print(len(D[0]), "soll = 3")
+#print(len(D[0][2]), "soll = ", len(U[0][0]) )
+
+
+
+
+for a in range(len(D)):
+	print("maximaler Unterschied der Energien bei ", D[a][1][Max_index(D[a][2])] ,"a.u. von" , max( D[a][2] ) , "Eh für ", D[a][0]  )
+	Diagramm( D[a][1], D[a][2], Label= D[a][0] , xAchse = "Abstand R [a.u.]", yAchse = "Energiedifferenzbeträge [Eh]" )
+plt.legend() 
+plt.savefig("Energiedifferenzen.pdf")
+
+
+#!? maximalen Unterschied ausgeben; genauere Daten um R = 2 
+
+
+
+
 
 
 
