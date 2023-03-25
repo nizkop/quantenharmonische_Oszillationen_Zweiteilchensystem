@@ -1,0 +1,13 @@
+cp ./techVar/* .
+julia main.jl
+mv *tab techVar
+rm *inp
+rm *tab
+
+cp ./sysVar/* .
+julia main.jl
+mv *tab sysVar
+rm *inp
+rm *tab 
+
+rm nohup.out 

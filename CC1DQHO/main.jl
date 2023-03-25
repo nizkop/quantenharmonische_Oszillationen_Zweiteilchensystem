@@ -31,7 +31,6 @@ else
 	println(fileContrib, "#mass\tfConst\trSep\txDist\tzDist\tnbFcts\tnbGHpoints\tnbEigval\tmxPTord\tcontributions")
 end
 
-println("nbtec",nbtec)
 
 for itec = 1:nbtec
     
@@ -73,12 +72,12 @@ for itec = 1:nbtec
         # perturbation potential matrix elements:
         perpotmat = zeros(div(details[itec].nbFcts*(details[itec].nbFcts+1),2))
         ij = 0
-        if Inf in hvalues 
-        	println("hvalues, Inf /NaN")
-        end
-        if Inf in potval ##
-                println("potval, Inf /NaN")
-        end
+        #if Inf in hvalues 
+        #	println("hvalues, Inf /NaN")
+        #end
+        #if Inf in potval ##
+        #        println("potval, Inf /NaN")
+        #end
         for i = 1:details[itec].nbFcts
             for j = i:details[itec].nbFcts
                 ij += 1
@@ -86,12 +85,12 @@ for itec = 1:nbtec
                 for k = 1:details[itec].nbGHpoints
                     integrand[k] = hvalues[k][i] * hvalues[k][j] * potval[k]
                 end
-                if Inf in weights
-                	println("weights Inf")
-		end
-		if Inf in integrand
-			println("integrand, Inf") 
-		end
+                #if Inf in weights
+                #	println("weights Inf")
+		#end
+		#if Inf in integrand
+		#	println("integrand, Inf") 
+		#end
                 perpotmat[ij] = dot(weights,integrand)
             end
         end

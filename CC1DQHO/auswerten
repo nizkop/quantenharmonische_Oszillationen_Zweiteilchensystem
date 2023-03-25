@@ -1,0 +1,14 @@
+cp python/* techVar
+cd techVar
+python3 anfang.py ja
+python3 anfang.py nein contributions.tab 
+python3 Latex.py *txt   #uebersicht-kurz.txt
+rm *py
+cd ..
+
+cp python/* sysVar
+cd sysVar
+python3 anfang.py nein
+python3 Latex.py *txt
+rm *py 
+cd ..
